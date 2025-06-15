@@ -52,44 +52,29 @@
 <!-- RESTAURANTS SECTION -->
 <section class="container-1440 px-4 py-6">
   <h2 class="text-xl font-semibold mb-4">Nearby Restaurants</h2>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <div class="bg-white rounded-xl shadow p-3">
-      <img src="https://via.placeholder.com/300x200?text=Paragon" class="rounded-lg mb-2 w-full" />
-      <div class="font-bold">Paragon Restaurant</div>
-      <div class="text-sm text-gray-600">📍 Calicut</div>
-      <div class="text-sm text-yellow-600">⭐ 4.5 (1,200+)</div>
-      <div class="text-xs text-gray-500">Chicken Biriyani • 20–30 mins</div>
-    </div>
-    <div class="bg-white rounded-xl shadow p-3">
-  <img src="https://via.placeholder.com/300x200?text=Albaik" class="rounded-lg mb-2 w-full" />
-  <div class="font-bold">Albaik Express</div>
-  <div class="text-sm text-gray-600">📍 Kochi</div>
-  <div class="text-sm text-yellow-600">⭐ 4.3 (900+)</div>
-  <div class="text-xs text-gray-500">Shawarma • 25–35 mins</div>
-</div>
-<div class="bg-white rounded-xl shadow p-3">
-  <img src="https://via.placeholder.com/300x200?text=Annapoorna" class="rounded-lg mb-2 w-full" />
-  <div class="font-bold">Annapoorna</div>
-  <div class="text-sm text-gray-600">📍 Trivandrum</div>
-  <div class="text-sm text-yellow-600">⭐ 4.1 (750+)</div>
-  <div class="text-xs text-gray-500">Veg Meals • 15–25 mins</div>
-</div>
-<div class="bg-white rounded-xl shadow p-3">
-  <img src="https://via.placeholder.com/300x200?text=Barbeque" class="rounded-lg mb-2 w-full" />
-  <div class="font-bold">Barbeque Nation</div>
-  <div class="text-sm text-gray-600">📍 Calicut</div>
-  <div class="text-sm text-yellow-600">⭐ 4.6 (2,000+)</div>
-  <div class="text-xs text-gray-500">Grill Platters • 30–40 mins</div>
-</div>
-<div class="bg-white rounded-xl shadow p-3">
-  <img src="https://via.placeholder.com/300x200?text=Arabian" class="rounded-lg mb-2 w-full" />
-  <div class="font-bold">Arabian Hub</div>
-  <div class="text-sm text-gray-600">📍 Kottayam</div>
-  <div class="text-sm text-yellow-600">⭐ 4.4 (600+)</div>
-  <div class="text-xs text-gray-500">Grilled Chicken • 20–25 mins</div>
-</div>
-  </div>
+  <div id="restaurant-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </section>
+
+<script>
+  async function loadRestaurants() {
+    const res = await fetch('https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec');
+    const data = await res.json();
+    const city = data.city || 'Kozhikode';
+    const list = document.getElementById('restaurant-list');
+    list.innerHTML = data.restaurants
+      .filter(r => r.city === city)
+      .map(r => `
+        <div class="bg-white rounded-xl shadow p-3">
+          <img src="${r.image}" class="rounded-lg mb-2 w-full" />
+          <div class="font-bold">${r.name}</div>
+          <div class="text-sm text-gray-600">📍 ${r.city}</div>
+          <div class="text-sm text-yellow-600">⭐ 4.5 (1,200+)</div>
+          <div class="text-xs text-gray-500">${r.category} • 20–30 mins</div>
+        </div>
+      `).join('');
+  }
+  loadRestaurants();
+</script>
 
 <!-- PRODUCT SECTION -->
 <section class="container-1440 px-4 py-6">
