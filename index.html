@@ -19,6 +19,12 @@
 <!-- HEADER -->
 <header class="sticky top-0 z-50 bg-white shadow px-4 py-3 flex items-center justify-between container-1440">
   <div class="text-xl font-bold text-green-600">Snappz</div>
+  <select id="city-selector" class="border px-2 py-1 rounded text-sm mr-4">
+    <option value="Kozhikode">Kozhikode</option>
+    <option value="Kochi">Kochi</option>
+    <option value="Kottayam">Kottayam</option>
+    <option value="Trivandrum">Trivandrum</option>
+  </select>
   <input type="text" placeholder="Search food or restaurants..." class="px-4 py-2 border rounded w-1/2" />
   <div class="text-green-600 font-semibold">Cart (<span id="cart-count">0</span>)</div>
 </header>
@@ -59,10 +65,10 @@
   async function loadRestaurants() {
     const res = await fetch('https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec');
     const data = await res.json();
-    const city = data.city || 'Kozhikode';
+    const selectedCity = document.getElementById('city-selector').value;
+    const city = selectedCity || data.city || 'Kozhikode';
     const list = document.getElementById('restaurant-list');
-    list.innerHTML = data.restaurants
-      .filter(r => r.city === city)
+    list.innerHTML = data.restaurants.filter(r => r.city && r.city.toLowerCase() === city.toLowerCase())
       .map(r => `
         <div class="bg-white rounded-xl shadow p-3">
           <img src="${r.image}" class="rounded-lg mb-2 w-full" />
@@ -73,22 +79,36 @@
         </div>
       `).join('');
   }
+  document.getElementById('city-selector').addEventListener('change', loadRestaurants);
   loadRestaurants();
 </script>
 
 <!-- PRODUCT SECTION -->
 <section class="container-1440 px-4 py-6">
   <h2 class="text-xl font-semibold mb-4">Popular Items</h2>
-  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <div class="bg-white p-3 rounded-xl shadow flex flex-col">
-      <img src="https://via.placeholder.com/300x200?text=Biriyani" class="rounded-lg w-full" />
-      <div class="mt-2 font-bold text-sm">Chicken Biriyani</div>
-      <div class="text-sm text-gray-700">₹120</div>
-      <button class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add to Cart</button>
-    </div>
-    <!-- Repeat 3+ dummy products -->
-  </div>
+  <div id="product-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </section>
+
+<script>
+  async function loadProducts() {
+    const res = await fetch('https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec');
+    const data = await res.json();
+    const selectedCity = document.getElementById('city-selector').value;
+    const city = selectedCity || data.city || 'Kozhikode';
+    const list = document.getElementById('product-list');
+    list.innerHTML = data.products
+      .filter(p => p.city && p.city.toLowerCase() === city.toLowerCase())
+      .map(p => `
+        <div class="bg-white p-3 rounded-xl shadow flex flex-col">
+          <img src="${p.image}" class="rounded-lg w-full h-40 object-cover" />
+          <div class="mt-2 font-bold text-sm">${p.name}</div>
+          <div class="text-sm text-gray-700">₹${p.price}</div>
+          <button class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add to Cart</button>
+        </div>
+      `).join('');
+  }
+  loadProducts();
+</script>
 
 <script>
   new Swiper('.hero-swiper', {
