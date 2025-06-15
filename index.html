@@ -16,112 +16,97 @@
 </head>
 <body class="bg-gray-100">
 
-<!-- HEADER -->
 <header class="sticky top-0 z-50 bg-white shadow px-4 py-3 flex items-center justify-between container-1440">
   <div class="text-xl font-bold text-green-600">Snappz</div>
-  <select id="city-selector" class="border px-2 py-1 rounded text-sm mr-4">
-    <option value="Kozhikode">Kozhikode</option>
-    <option value="Kochi">Kochi</option>
-    <option value="Kottayam">Kottayam</option>
-    <option value="Trivandrum">Trivandrum</option>
-  </select>
-  <input type="text" placeholder="Search food or restaurants..." class="px-4 py-2 border rounded w-1/2" />
+  <select id="city-selector" class="border px-2 py-1 rounded text-sm"></select>
   <div class="text-green-600 font-semibold">Cart (<span id="cart-count">0</span>)</div>
 </header>
 
-<!-- HERO SLIDER -->
 <section class="container-1440 px-4 py-4">
-  <div class="swiper hero-swiper rounded-xl overflow-hidden">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide">
-        <img src="https://snappyeats.vercel.app/images/banner1.png" class="w-full max-h-[400px] object-cover" />
-      </div>
-      <div class="swiper-slide">
-        <img src="https://snappyeats.vercel.app/images/banner2.png" class="w-full max-h-[400px] object-cover" />
-      </div>
-      <div class="swiper-slide">
-        <img src="https://snappyeats.vercel.app/images/banner3.png" class="w-full max-h-[500px] object-cover" />
-      </div>
-    </div>
-    <div class="swiper-pagination mt-2"></div>
-  </div>
+  <div class="swiper hero-swiper rounded-xl overflow-hidden" id="top-banners"></div>
 </section>
 
-<!-- SUB BANNERS -->
-<section class="container-1440 px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-  <img src="https://via.placeholder.com/330x150?text=Sub1" class="rounded-lg w-full h-auto" />
-  <img src="https://via.placeholder.com/330x150?text=Sub2" class="rounded-lg w-full h-auto" />
-  <img src="https://via.placeholder.com/330x150?text=Sub3" class="rounded-lg w-full h-auto" />
-  <img src="https://via.placeholder.com/330x150?text=Sub4" class="rounded-lg w-full h-auto" />
-</section>
+<section class="container-1440 px-4 py-4 grid grid-cols-2 md:grid-cols-4 gap-4" id="sub-banners"></section>
 
-<!-- RESTAURANTS SECTION -->
 <section class="container-1440 px-4 py-6">
   <h2 class="text-xl font-semibold mb-4">Nearby Restaurants</h2>
   <div id="restaurant-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </section>
 
-<script>
-  async function loadRestaurants() {
-    const res = await fetch('https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec');
-    const data = await res.json();
-    const selectedCity = document.getElementById('city-selector').value;
-    const city = selectedCity || data.city || 'Kozhikode';
-    const list = document.getElementById('restaurant-list');
-    list.innerHTML = data.restaurants.filter(r => r.city && r.city.toLowerCase() === city.toLowerCase())
-      .map(r => `
-        <div class="bg-white rounded-xl shadow p-3">
-          <img src="${r.image}" class="rounded-lg mb-2 w-full" />
-          <div class="font-bold">${r.name}</div>
-          <div class="text-sm text-gray-600">📍 ${r.city}</div>
-          <div class="text-sm text-yellow-600">⭐ 4.5 (1,200+)</div>
-          <div class="text-xs text-gray-500">${r.category} • 20–30 mins</div>
-        </div>
-      `).join('');
-  }
-  document.getElementById('city-selector').addEventListener('change', loadRestaurants);
-  loadRestaurants();
-</script>
-
-<!-- PRODUCT SECTION -->
 <section class="container-1440 px-4 py-6">
   <h2 class="text-xl font-semibold mb-4">Popular Items</h2>
   <div id="product-list" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
 </section>
 
 <script>
-  async function loadProducts() {
-    const res = await fetch('https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec');
-    const data = await res.json();
-    const selectedCity = document.getElementById('city-selector').value;
-    const city = selectedCity || data.city || 'Kozhikode';
-    const list = document.getElementById('product-list');
-    list.innerHTML = data.products
-      .filter(p => p.city && p.city.toLowerCase() === city.toLowerCase())
-      .map(p => `
-        <div class="bg-white p-3 rounded-xl shadow flex flex-col">
-          <img src="${p.image}" class="rounded-lg w-full h-40 object-cover" />
-          <div class="mt-2 font-bold text-sm">${p.name}</div>
-          <div class="text-sm text-gray-700">₹${p.price}</div>
-          <button class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add to Cart</button>
-        </div>
-      `).join('');
-  }
-  loadProducts();
-</script>
+  const endpoint = 'https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec';
 
-<script>
-  new Swiper('.hero-swiper', {
-    loop: true,
-    pagination: {
-      el: '.swiper-pagination',
-      clickable: true,
-    },
-    autoplay: {
-      delay: 3000,
-      disableOnInteraction: false,
-    },
-  });
+  function extractUniqueCities(data) {
+    const allCities = [
+      ...data.banners.map(b => b.city),
+      ...data.restaurants.map(r => r.city),
+      ...data.products.map(p => p.city)
+    ];
+    return [...new Set(allCities.filter(Boolean).map(c => c.trim()))].sort();
+  }
+
+  async function initialize() {
+    const res = await fetch(endpoint);
+    const data = await res.json();
+    const cities = extractUniqueCities(data);
+
+    const selector = document.getElementById('city-selector');
+    selector.innerHTML = cities.map(city => `<option value="${city}">${city}</option>`).join('');
+
+    selector.addEventListener('change', (e) => {
+      const selectedCity = e.target.value;
+      loadAllContent(selectedCity, data);
+    });
+
+    loadAllContent(cities[0], data);
+  }
+
+  function loadAllContent(city, data) {
+    const topBanners = data.banners.filter(b => b.type === 'top' && b.city.toLowerCase() === city.toLowerCase());
+    const subBanners = data.banners.filter(b => b.type === 'sub' && b.city.toLowerCase() === city.toLowerCase());
+
+    document.getElementById('top-banners').innerHTML = `
+      <div class="swiper-wrapper">
+        ${topBanners.map(b => `<div class="swiper-slide"><img src="${b.img}" class="w-full max-h-[400px] object-cover" /></div>`).join('')}
+      </div>
+      <div class="swiper-pagination mt-2"></div>
+    `;
+    new Swiper('.hero-swiper', {
+      loop: true,
+      pagination: { el: '.swiper-pagination', clickable: true },
+      autoplay: { delay: 3000, disableOnInteraction: false },
+    });
+
+    document.getElementById('sub-banners').innerHTML = subBanners.map(b => `<img src="${b.img}" class="rounded-lg w-full h-auto" />`).join('');
+
+    const filteredRestaurants = data.restaurants.filter(r => r.city && r.city.toLowerCase() === city.toLowerCase());
+    document.getElementById('restaurant-list').innerHTML = filteredRestaurants.map(r => `
+      <div class="bg-white rounded-xl shadow p-3">
+        <img src="${r.image}" class="rounded-lg mb-2 w-full" />
+        <div class="font-bold">${r.name}</div>
+        <div class="text-sm text-gray-600">📍 ${r.city}</div>
+        <div class="text-sm text-yellow-600">⭐ 4.5 (1,200+)</div>
+        <div class="text-xs text-gray-500">${r.category} • 20–30 mins</div>
+      </div>
+    `).join('');
+
+    const filteredProducts = data.products.filter(p => p.city && p.city.toLowerCase() === city.toLowerCase());
+    document.getElementById('product-list').innerHTML = filteredProducts.map(p => `
+      <div class="bg-white p-3 rounded-xl shadow flex flex-col">
+        <img src="${p.image}" class="rounded-lg w-full h-40 object-cover" />
+        <div class="mt-2 font-bold text-sm">${p.name}</div>
+        <div class="text-sm text-gray-700">₹${p.price}</div>
+        <button class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add to Cart</button>
+      </div>
+    `).join('');
+  }
+
+  initialize();
 </script>
 
 </body>
