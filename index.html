@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SnappyEats</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <header class="sticky top-0 z-50 bg-white shadow-sm p-4 flex items-center justify-between">
+    <div class="text-xl font-bold text-green-600">SnappyEats</div>
+    <input type="text" placeholder="Search food or restaurants" class="w-1/2 px-3 py-1 border rounded"/>
+    <div id="cart-btn" class="relative">
+      <button class="text-green-600 font-semibold">Cart (<span id="cart-count">0</span>)</button>
+    </div>
+  </header>
+
+  <section class="mt-4">
+    <div class="overflow-x-scroll flex gap-2 px-4" id="top-banners"></div>
+    <div class="grid grid-cols-2 gap-2 px-4 mt-4" id="sub-banners"></div>
+  </section>
+
+  <section class="mt-6 px-4">
+    <h2 class="text-lg font-semibold mb-2">Popular Restaurants</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="restaurant-list"></div>
+  </section>
+
+  <section class="mt-8 px-4">
+    <h2 class="text-lg font-semibold mb-2">Available Items</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="product-list"></div>
+  </section>
+
+  <div id="cart-panel" class="fixed bottom-0 w-full bg-white border-t shadow-inner p-4 hidden">
+    <div id="cart-items" class="max-h-40 overflow-y-auto"></div>
+    <div class="flex justify-between mt-2">
+      <div class="font-bold">Total: ₹<span id="cart-total">0</span></div>
+      <button onclick="checkout()" class="bg-green-600 text-white px-4 py-2 rounded">Checkout</button>
+    </div>
+  </div>
+
+<script>
+let products = [], banners = [], restaurants = [], city = null, cart = [];
+
+// ✅ Your live Google Apps Script URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwKfYKeWpPD0WrKLePlIIHcEmuy2iuVKjfJW7JuklwiiXebCBs_vuuNqoIE1-tsX9E5/exec";
+
+navigator.geolocation.getCurrentPosition(async (pos) => {
+  const { latitude, longitude } = pos.coords;
+  const cityData = await axios.get(`${SCRIPT_URL}?lat=${latitude}&lng=${longitude}`);
+  city = cityData.data.city;
+  loadCityContent(city);
+});
+
+async function loadCityContent(city) {
+  const res = await axios.get(`${SCRIPT_URL}?city=${city}`);
+  products = res.data.products;
+  banners = res.data.banners;
+  restaurants = res.data.restaurants;
+  renderUI();
+}
+
+function renderUI() {
+  document.getElementById('top-banners').innerHTML = banners.filter(b => b.type === 'top').map(b => `<img src="${b.img}" class="h-32 rounded" />`).join('');
+  document.getElementById('sub-banners').innerHTML = banners.filter(b => b.type === 'sub').map(b => `<img src="${b.img}" class="h-24 w-full rounded" />`).join('');
+  document.getElementById('restaurant-list').innerHTML = restaurants.map(r => `
+    <div class="bg-white p-2 shadow rounded">
+      <img src="${r.image}" class="h-24 w-full object-cover rounded" />
+      <div class="mt-2 text-sm font-bold">${r.name}</div>
+      <div class="text-xs text-gray-500">${r.category}</div>
+    </div>
+  `).join('');
+  document.getElementById('product-list').innerHTML = products.map(p => `
+    <div class="bg-white p-2 shadow rounded flex flex-col">
+      <img src="${p.image}" class="h-24 object-cover rounded" />
+      <div class="mt-1 text-sm font-bold">${p.name}</div>
+      <div class="text-xs text-gray-600">₹${p.price}</div>
+      <button onclick='addToCart(${JSON.stringify(p)})' class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add</button>
+    </div>
+  `).join('');
+}
+
+function addToCart(p) {
+  cart.push(p);
+  document.getElementById('cart-count').innerText = cart.length;
+  document.getElementById('cart-panel').classList.remove('hidden');
+  renderCart();
+}
+
+function renderCart() {
+  let total = 0;
+  document.getElementById('cart-items').innerHTML = cart.map(p => {
+    total += parseFloat(p.price);
+    return `<div class="text-sm py-1 border-b">${p.name} - ₹${p.price}</div>`;
+  }).join('');
+  document.getElementById('cart-total').innerText = total.toFixed(2);
+}
+
+function checkout() {
+  const total = cart.reduce((sum, p) => sum + parseFloat(p.price), 0);
+  const orderText = encodeURIComponent(cart.map(p => `✅ ${p.name} - ₹${p.price}`).join('\n') + `\n\nTotal: ₹${total}`);
+  const payLink = 'https://razorpay.me/YOUR_LINK?amount=' + Math.round(total * 100);
+  Swal.fire({
+    title: 'Confirm Payment',
+    html: `Amount: ₹${total}<br><a href='${payLink}' target='_blank' class='text-blue-600 underline'>Click here to Pay</a>`
+  }).then(() => {
+    const whatsappUrl = 'https://wa.me/YOUR_WHATSAPP?text=' + orderText;
+    window.open(whatsappUrl, '_blank');
+  });
+}
+</script>
+</body>
+</html>
