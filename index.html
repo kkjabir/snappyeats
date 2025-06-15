@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Snappz - Hyperlocal Ordering</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -20,66 +20,87 @@
 </header>
 
 <!-- Top Banner Slider -->
-<div class="scroll-x p-4 space-x-4 flex" id="top-banners"></div>
+<div class="scroll-x p-4 space-x-4 flex" id="top-banners">
+  <!-- Fallback banners -->
+  <img src="https://via.placeholder.com/300x120?text=Banner1" class="rounded-lg h-32" />
+  <img src="https://via.placeholder.com/300x120?text=Banner2" class="rounded-lg h-32" />
+  <img src="https://via.placeholder.com/300x120?text=Banner3" class="rounded-lg h-32" />
+</div>
 
 <!-- Sub Banners -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4" id="sub-banners"></div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-4" id="sub-banners">
+  <!-- Fallback -->
+  <img src="https://via.placeholder.com/300x120?text=Sub1" class="rounded-lg" />
+  <img src="https://via.placeholder.com/300x120?text=Sub2" class="rounded-lg" />
+  <img src="https://via.placeholder.com/300x120?text=Sub3" class="rounded-lg" />
+  <img src="https://via.placeholder.com/300x120?text=Sub4" class="rounded-lg" />
+</div>
 
 <!-- Restaurants -->
 <h2 class="text-xl font-semibold px-4 mt-6">Checkout Best Food Places</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4" id="restaurant-list"></div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4" id="restaurant-list">
+  <!-- Loaded from CMS -->
+</div>
 
 <!-- Product Grid -->
 <h2 class="text-xl font-semibold px-4 mt-6">Popular Items</h2>
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4" id="product-list"></div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4" id="product-list">
+  <!-- Loaded from CMS -->
+</div>
 
 <script>
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlzXeYx2Y4yDF2NpEKBdWdm7UxP7r1e_4lhz-i7gNcVoNkAgVsLZm4u1NL5Z0xWDuhuA/exec";
+let cart = [];
 
-let products = [], banners = [], restaurants = [], city = null, cart = [];
-
-navigator.geolocation.getCurrentPosition(async (pos) => {
-  const { latitude, longitude } = pos.coords;
-  const cityData = await axios.get(`${SCRIPT_URL}?lat=${latitude}&lng=${longitude}`);
-  city = cityData.data.city;
-  loadCityContent(city);
-});
-
-async function loadCityContent(city) {
-  const res = await axios.get(`${SCRIPT_URL}?city=${city}`);
-  products = res.data.products;
-  banners = res.data.banners;
-  restaurants = res.data.restaurants;
-  renderUI();
+async function loadContent() {
+  try {
+    const res = await axios.get(SCRIPT_URL);
+    const data = res.data;
+    renderBanners(data.banners);
+    renderRestaurants(data.restaurants);
+    renderProducts(data.products);
+  } catch (e) {
+    console.error("Error loading data", e);
+  }
 }
 
-function renderUI() {
-  document.getElementById('top-banners').innerHTML = banners.filter(b => b.type === 'top').map(b => `<img src="${b.img}" class="rounded-lg h-32" />`).join('');
-  document.getElementById('sub-banners').innerHTML = banners.filter(b => b.type === 'sub').map(b => `<img src="${b.img}" class="rounded-lg w-full" />`).join('');
-  document.getElementById('restaurant-list').innerHTML = restaurants.map(r => `
+function renderBanners(banners) {
+  const top = banners.filter(b => b.type === "top").map(b => `<img src="${b.img}" class="rounded-lg h-32" />`).join("");
+  const sub = banners.filter(b => b.type === "sub").map(b => `<img src="${b.img}" class="rounded-lg w-full" />`).join("");
+  document.getElementById("top-banners").innerHTML = top;
+  document.getElementById("sub-banners").innerHTML = sub;
+}
+
+function renderRestaurants(restaurants) {
+  document.getElementById("restaurant-list").innerHTML = restaurants.map(r => `
     <div class="bg-white p-3 rounded-xl shadow-md">
       <img src="${r.image}" class="rounded-lg mb-2" />
       <div class="font-bold text-md">${r.name}</div>
       <div class="text-sm text-gray-600">📍 ${r.location}</div>
       <div class="text-sm text-yellow-600">⭐ ${r.rating}</div>
-      <div class="text-xs text-gray-500">${r.category}</div>
+      <div class="text-xs text-gray-500">${r.description}</div>
       <div class="mt-1 text-xs text-green-700 font-semibold">${r.offer}</div>
     </div>
-  `).join('');
-  document.getElementById('product-list').innerHTML = products.map(p => `
+  `).join("");
+}
+
+function renderProducts(products) {
+  document.getElementById("product-list").innerHTML = products.map(p => `
     <div class="bg-white p-3 rounded-xl shadow-md flex flex-col">
       <img src="${p.image}" class="rounded-lg" />
       <div class="font-bold mt-2 text-sm">${p.name}</div>
       <div class="text-sm text-gray-700">₹${p.price}</div>
       <button onclick="addToCart('${p.name}', ${p.price})" class="mt-2 bg-green-600 text-white text-xs py-1 rounded">Add to Cart</button>
     </div>
-  `).join('');
+  `).join("");
 }
 
 function addToCart(name, price) {
   cart.push({ name, price });
-  document.getElementById('cart-count').innerText = cart.length;
+  document.getElementById("cart-count").innerText = cart.length;
 }
+
+window.onload = loadContent;
 </script>
 
 </body>
